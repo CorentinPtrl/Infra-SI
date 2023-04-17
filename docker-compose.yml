@@ -1,0 +1,25 @@
+version: '2'
+services:
+  openvpn:
+    cap_add:
+     - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn
+    ports:
+     - "1194:1194/udp"
+    restart: always
+    volumes:
+     - ./openvpn-data/conf:/etc/openvpn
+     - openvpn-status:/tmp/
+  openvpn_exporter:
+    image: kumina/openvpn-exporter
+    container_name: openvpn-exporter
+    command: -openvpn.status_paths /etc/openvpn_exporter/openvpn-status.log
+    ports:
+     - 9176:9176
+    restart: always
+    volumes:
+     - openvpn-status:/etc/openvpn_exporter/
+volumes:
+  openvpn-status:
+    driver: local
