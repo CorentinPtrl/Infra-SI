@@ -1,5 +1,6 @@
 ---
 prometheus_dir_configuration: "/etc/prometheus"
+prometheus_port: 9090
 prometheus_retention_time: "365d"
 prometheus_scrape_interval: "30s"
 prometheus_node_exporter: true
@@ -17,4 +18,8 @@ prometheus_var_config:
       static_configs:
         - targets: ['localhost:9176']
 
-grafana_admin_password: Password1234        
+# Grafana
+grafana_dir_configuration: "/etc/grafana"
+grafana_dashboard_provider_name: Services
+grafana_dashboard_provider_path: /var/lib/grafana/dashboards
+grafana_admin_password: Password1234

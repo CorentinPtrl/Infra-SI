@@ -1,6 +1,6 @@
 # OpenVPN server configuration
 # Your server url, port and protocol
-openvpn_url: 40.78.4.154
+openvpn_url: vpn
 openvpn_port: 1194
 openvpn_protocol: udp
 

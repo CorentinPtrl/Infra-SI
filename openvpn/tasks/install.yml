@@ -2,7 +2,7 @@
   tags: ovpn-server
   block:
   - name: Install OpenVPN package
-    ansible.builtin.apt:
+    ansible.builtin.package:
       name: openvpn
       state: '{{ openvpn_package_version }}'
       update_cache: true

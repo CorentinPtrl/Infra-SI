@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: Ansible
+    folder: {{ grafana_dashboard_provider_name }}
+    type: file
+    options:
+      path:
+        {{ grafana_dashboard_provider_path }}
