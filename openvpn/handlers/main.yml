@@ -1,0 +1,18 @@
+- name: Apply sysctl.conf configuration
+  ansible.builtin.command:
+    cmd: sysctl -p
+  changed_when: ovpn_sysctl_conf_change_info.changed
+  listen: 'openvpn : apply sysctl config'
+
+- name: Reload Uncomplicated Firewall
+  community.general.ufw:
+    state: reloaded
+  listen: 'openvpn : reload firewall'
+
+- name: Restart OpenVPN server
+  ansible.builtin.systemd:
+    service: openvpn-server@server
+    state: restarted
+    enabled: true
+  when: not ansible_check_mode
+  listen: 'openvpn : restart service'

@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenVpn Exporter
+After=network-online.target
+ 
+[Service]
+Type=simple
+ 
+ExecStart=/var/lib/openvpn_exporter/openvpn_exporter -openvpn.status_paths {{ openvpn_status_path }}
+ 
+Restart=on-failure
+ 
+TimeoutStopSec=300
+ 
+[Install]
+WantedBy=multi-user.target

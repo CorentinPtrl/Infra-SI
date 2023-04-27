@@ -1,0 +1,46 @@
+# OpenVPN server configuration
+# Your server url, port and protocol
+openvpn_url: 40.78.4.154
+openvpn_port: 1194
+openvpn_protocol: udp
+
+# true if you want use the Uncomplicated Firewall
+# if false you may need to use other firewall
+openvpn_use_ufw: true
+
+# DNS-servers
+openvpn_dns:
+  - 1.1.1.1
+  - 1.0.0.1
+
+# Clients of your Open VPN server
+openvpn_clients:
+  - name: client0
+
+#Open Vpn Status path
+openvpn_status_path: /var/log/openvpn/openvpn-status.log
+
+# TLS configuration
+# CA-storage location on CA server
+openvpn_easy_rsa_path: ./ovpn-easy-rsa
+
+# Client's ovpn-configs location on localhost
+openvpn_clients_path: ./ovpn-clients
+
+# Server's common name (CN)
+openvpn_server_cn: ovpn-server
+
+# OpenVPN apt package version
+openvpn_package_version: latest
+
+# Delete currently existing Easy RSA directory
+openvpn_reset_easy_rsa: false
+
+# Distinguished Name (CN) of your CA
+openvpn_easyrsa_req_cn: openvpn-server
+openvpn_easyrsa_req_country: NET
+openvpn_easyrsa_req_province: Default
+openvpn_easyrsa_req_city: Default City
+openvpn_easyrsa_req_org: None
+openvpn_easyrsa_req_email: no@email.net
+openvpn_easyrsa_req_ou: Community

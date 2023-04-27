@@ -1,0 +1,63 @@
+- name: Deploy OpenVPN server
+  tags: ovpn-server
+  block:
+  - name: Install OpenVPN package
+    ansible.builtin.apt:
+      name: openvpn
+      state: '{{ openvpn_package_version }}'
+      update_cache: true
+    notify: 'openvpn : restart service'
+
+  - name: Copy server certificate
+    ansible.builtin.copy:
+      content: '{{ server_cert_value }}'
+      dest: '/etc/openvpn/server/{{ openvpn_server_cn }}.crt'
+      mode: '644'
+    when: not ansible_check_mode
+    notify: 'openvpn : restart service'
+
+  - name: Copy CA certificate
+    ansible.builtin.copy:
+      content: '{{ ca_cert_value }}'
+      dest: '/etc/openvpn/server/ca.crt'
+      mode: '644'
+    when: not ansible_check_mode
+    notify: 'openvpn : restart service'
+
+  - name: Copy TLS Auth key
+    ansible.builtin.copy:
+      content: '{{ ta_key_value }}'
+      dest: '/etc/openvpn/server/ta.key'
+      mode: '644'
+    when: not ansible_check_mode
+    notify: 'openvpn : restart service'
+
+  - name: Copy CRL file
+    ansible.builtin.copy:
+      content: '{{ crl_value }}'
+      dest: '/etc/openvpn/server/crl.pem'
+      mode: '644'
+    when: not ansible_check_mode
+    notify: 'openvpn : restart service'
+
+  - name: Copy OpenVPN server's config
+    ansible.builtin.template:
+      src: server_conf.j2
+      dest: /etc/openvpn/server/server.conf
+      mode: '644'
+    notify: 'openvpn : restart service'
+
+  - name: Copy server key
+    ansible.builtin.copy:
+      content: '{{ server_key_value }}'
+      dest: '/etc/openvpn/server/{{ openvpn_server_cn }}.key'
+      mode: '400'
+    when: not ansible_check_mode
+    notify: 'openvpn : restart service'
+
+  - name: Edit sysctl.conf (ip forwarding)
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      line: net.ipv4.ip_forward = 1
+    register: ovpn_sysctl_conf_change_info
+    notify: 'openvpn : apply sysctl config'

@@ -1,0 +1,32 @@
+- name: Server Keys
+  ansible.builtin.include_tasks: server_keys.yml
+  run_once: true
+  tags:
+    - ovpn-clients
+    - ovpn-server
+
+- name: Create OpenVPN clients
+  ansible.builtin.include_tasks: create_client.yml
+  vars:
+    client_name: '{{ item.name }}'
+  loop: '{{ openvpn_clients }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags:
+    - ovpn-clients
+
+- name: Install OpenVPN
+  ansible.builtin.include_tasks: install.yml
+  tags:
+    - ovpn-server
+
+- name: Install OpenVPN Exporter
+  ansible.builtin.include_tasks: install_exporter.yml
+  tags:
+    - ovpn-server    
+
+- name: Setup UFW
+  ansible.builtin.include_tasks: ufw.yml
+  when: openvpn_use_ufw
+  tags:
+    - ovpn-server

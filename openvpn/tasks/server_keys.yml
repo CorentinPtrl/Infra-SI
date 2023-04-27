@@ -1,0 +1,128 @@
+- name: Delete existing Easy RSA folder
+  ansible.builtin.file:
+    path: '{{ openvpn_easy_rsa_path }}'
+    state: absent
+  when: openvpn_reset_easy_rsa
+  tags:
+    - ovpn-clients
+    - ovpn-server
+
+- name: Check Easy RSA folder status
+  ansible.builtin.stat:
+    path: '{{ openvpn_easy_rsa_path }}'
+  register: ovpn_easyrsa_stat_info
+  run_once: true
+  tags:
+    - ovpn-clients
+    - ovpn-server
+
+- name: Generate TLS artifacts
+  when: not ovpn_easyrsa_stat_info.stat.exists
+  tags:
+    - ovpn-clients
+    - ovpn-server  
+  block:
+    - name: Install Easy-RSA
+      ansible.builtin.package:
+        name: easy-rsa
+        state: '{{ openvpn_package_version }}'
+        update_cache: true
+
+    - name: Copy Easy-RSA content
+      ansible.builtin.copy:
+        src: /usr/share/easy-rsa/
+        dest: '{{ openvpn_easy_rsa_path }}'
+        remote_src: true
+        mode: '644'
+      when: not ansible_check_mode
+
+    - name: Add execution rights to easyrsa bin
+      ansible.builtin.file:
+        path: '{{ openvpn_easy_rsa_path }}/easyrsa'
+        mode: '700'
+      when: not ansible_check_mode
+
+    - name: Copy vars to easyrsa folder
+      ansible.builtin.template:
+        src: easyrsa_vars.j2
+        dest: '{{ openvpn_easy_rsa_path }}/vars'
+        mode: '644'
+
+    - name: Create PKI
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: ./easyrsa init-pki
+      when: not ansible_check_mode
+      changed_when: true
+
+    - name: Build CA
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: ./easyrsa build-ca nopass
+      when: not ansible_check_mode
+      changed_when: true
+
+    - name: Generate servers's key/cert pair
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: './easyrsa build-server-full {{ openvpn_server_cn }} nopass'
+      when: not ansible_check_mode
+      changed_when: true
+
+    - name: Generate certificate revocation list
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: ./easyrsa gen-crl
+      when: not ansible_check_mode
+      changed_when: true
+
+    - name: Check ta.key existing status
+      ansible.builtin.stat:
+        path: '{{ openvpn_easy_rsa_path }}/ta.key'
+      register: ovpn_ta_key_stat_info
+
+    - name: Install OpenVPN
+      ansible.builtin.apt:
+        name: openvpn
+        state: '{{ openvpn_package_version }}'
+        update_cache: true
+      when: not ovpn_ta_key_stat_info.stat.exists
+
+    - name: Generate ta.key
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: openvpn --genkey --secret ta.key
+      when:
+        - not ovpn_ta_key_stat_info.stat.exists
+        - not ansible_check_mode
+      changed_when: true
+
+
+- name: Read servers files from CA server
+  ansible.builtin.command:
+    chdir: '{{ openvpn_easy_rsa_path }}'
+    cmd: 'cat {{ item }}'
+  loop:
+    - 'pki/ca.crt'
+    - 'ta.key'
+    - 'pki/issued/{{ openvpn_server_cn }}.crt'
+    - 'pki/private/{{ openvpn_server_cn }}.key'
+    - 'pki/crl.pem'
+  loop_control:
+    label: '{{ item }}'
+  register: ovpn_servers_files_values
+  tags:
+    - ovpn-clients
+    - ovpn-server
+  changed_when: false
+
+- name: Write servers files to variables
+  ansible.builtin.set_fact:
+    ca_cert_value: '{{ ovpn_servers_files_values.results[0].stdout | trim }}'
+    ta_key_value: '{{ ovpn_servers_files_values.results[1].stdout | trim }}'
+    server_cert_value: '{{ ovpn_servers_files_values.results[2].stdout | trim }}'
+    server_key_value: '{{ ovpn_servers_files_values.results[3].stdout | trim }}'
+    crl_value: '{{ ovpn_servers_files_values.results[4].stdout | trim }}'
+  tags:
+    - ovpn-clients
+    - ovpn-server
