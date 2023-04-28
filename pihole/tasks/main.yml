@@ -1,0 +1,19 @@
+---
+- name: Install prerequisites
+  ansible.builtin.include_tasks: "prerequisites.yml"
+  tags:
+    - pihole
+    - installation
+    - prerequisites
+
+- name: Install pi-hole
+  ansible.builtin.include_tasks: "install.yml"
+  tags:
+    - pihole
+    - installation
+
+- name: Configure pi-hole
+  ansible.builtin.include_tasks: "configure.yml"
+  tags:
+    - pihole
+    - configure
