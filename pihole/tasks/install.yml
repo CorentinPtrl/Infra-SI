@@ -1,0 +1,58 @@
+---
+- name: Check if pi-hole is already installed
+  ansible.builtin.stat:
+    path: "/srv/ovpn/pihole"
+  register: pihole_installed
+  tags:
+    - pihole
+    - installation
+    - check
+
+- name: Create pihole config directory
+  become: true
+  ansible.builtin.file:
+    name: /srv/ovpn/pihole
+    state: directory
+    mode: 0644
+  when: pihole_installed.stat.isdir is undefined
+  tags:
+    - pihole
+    - installation
+    - prepare
+
+- name: Copy pihole setupVars
+  become: true
+  ansible.builtin.template:
+    src: srv/ovpn/pihole/templates/setupVars.conf.j2
+    dest: /srv/ovpn/pihole/templates/setupVars.conf
+    mode: 0644
+  when: pihole_installed.stat.isdir is undefined
+  tags:
+    - pihole
+    - installation
+    - prepare
+
+- name: Clone pihole repository revision {{ pi_hole_version }}
+  become: true
+  ansible.builtin.git:
+    repo: "{{ pi_hole_repo }}"
+    clone: true
+    depth: 20
+    dest: "{{ pi_hole_install_dir }}"
+    version: "{{ pi_hole_version }}"
+  when: pihole_installed.stat.isdir is undefined
+  tags:
+    - pihole
+    - installation
+    - source
+
+- name: Install pihole
+  become: true
+  ansible.builtin.command: bash basic-install.sh --unattended
+  args:
+    chdir: "{{ pi_hole_install_dir }}/automated install"
+    creates: installed.txt
+  when: pihole_installed.stat.isdir is undefined
+  tags:
+    - pihole
+    - installation
