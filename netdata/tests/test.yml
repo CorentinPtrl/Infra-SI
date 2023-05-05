@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  remote_user: entys
+  roles:
+    - /home/entys/Infra-SI/netdata
