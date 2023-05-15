@@ -1,7 +1,7 @@
 ---
 - name: Check if pi-hole is already installed
   ansible.builtin.stat:
-    path: "/srv/ovpn/pihole"
+    path: "/opt/pihole"
   register: pihole_installed
   tags:
     - pihole
@@ -11,7 +11,7 @@
 - name: Create pihole config directory
   become: true
   ansible.builtin.file:
-    name: /srv/ovpn/pihole
+    name: /etc/pihole
     state: directory
     mode: 0644
   when: pihole_installed.stat.isdir is undefined
@@ -23,8 +23,8 @@
 - name: Copy pihole setupVars
   become: true
   ansible.builtin.template:
-    src: srv/ovpn/pihole/templates/setupVars.conf.j2
-    dest: /srv/ovpn/pihole/templates/setupVars.conf
+    src: setupVars.conf.j2
+    dest: /etc/pihole/setupVars.conf
     mode: 0644
   when: pihole_installed.stat.isdir is undefined
   tags:

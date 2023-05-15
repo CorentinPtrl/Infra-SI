@@ -1,5 +1,5 @@
 {% if pi_hole_webpasswd is defined %}
-WEBPASSWORD={{ pi_hole_webpasswd }}
+WEBPASSWORD={{ password }}
 {% endif %}
 CACHE_SIZE={{ pi_hole_cache_size | default("10000") }}
 DNSMASQ_LISTENING={{ pi_hole_dnsmasq_listening | default("single") }}

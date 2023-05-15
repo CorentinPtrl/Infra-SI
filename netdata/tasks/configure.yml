@@ -1,0 +1,12 @@
+---
+- name: Configure netdata
+  become: true
+  ansible.builtin.template:
+    src: netdata.conf.j2
+    dest: /etc/netdata/netdata.conf
+    mode: 0644
+  notify:
+    - Restart netdata
+  tags:
+    - netdata
+    - configure

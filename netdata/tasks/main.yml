@@ -7,3 +7,9 @@
 
 - name: include OS specific tasks
   include_tasks: "{{ ansible_distribution }}{{ ansible_distribution_major_version }}.yml"
+
+- name: Configure netdata
+  ansible.builtin.include_tasks: "configure.yml"
+  tags:
+    - netdata
+    - configure
