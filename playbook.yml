@@ -1,0 +1,11 @@
+---
+- hosts: vpn
+  become: yes
+  vars:
+      openvpn_url: 4.246.160.196
+      openvpn_clients:
+        - name: corentin
+        - name: test
+      ufw_open_prometheus_port: true
+  roles:
+    - role: pihole
