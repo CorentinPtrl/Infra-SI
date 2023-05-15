@@ -1,0 +1,31 @@
+openvpn_url: vpn
+openvpn_port: 1194
+openvpn_protocol: udp
+
+openvpn_use_ufw: true
+
+openvpn_dns:
+  - 8.8.8.8
+
+openvpn_clients:
+  - name: client0
+
+openvpn_status_path: /var/log/openvpn/openvpn-status.log
+
+openvpn_easy_rsa_path: ./ovpn-easy-rsa
+
+openvpn_clients_path: ./ovpn-clients
+
+openvpn_server_cn: ovpn-server
+
+openvpn_package_version: latest
+
+openvpn_reset_easy_rsa: false
+
+openvpn_easyrsa_req_cn: openvpn-server
+openvpn_easyrsa_req_country: NET
+openvpn_easyrsa_req_province: Default
+openvpn_easyrsa_req_city: Default City
+openvpn_easyrsa_req_org: None
+openvpn_easyrsa_req_email: no@email.net
+openvpn_easyrsa_req_ou: Community

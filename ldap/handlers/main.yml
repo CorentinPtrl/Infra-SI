@@ -1,0 +1,7 @@
+---
+- name: restart_ldap
+  systemd:
+    name: slapd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

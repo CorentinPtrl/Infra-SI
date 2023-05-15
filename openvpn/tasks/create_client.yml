@@ -1,0 +1,74 @@
+- name: Ensure clients directory exists on CA host
+  ansible.builtin.file:
+    path: '{{ openvpn_easy_rsa_path }}/client-configs'
+    state: directory
+    mode: '744'
+  run_once: true
+  tags:
+    - ovpn-clients
+    
+- name: Create clients
+  tags:
+    - ovpn-clients
+  block:
+    - name: Ensure clients directory is present on localhost host
+      ansible.builtin.file:
+        path: '{{ openvpn_clients_path }}'
+        state: directory
+        mode: '744'
+      run_once: true
+
+    - name: 'Check if config already exists : {{ client_name }}'
+      ansible.builtin.stat:
+        path: '{{ openvpn_easy_rsa_path }}/client-configs/{{ client_name }}.ovpn'
+      register: ovpn_client_stat_info
+      run_once: true
+
+    - name: 'Generate key/cert pair : {{ client_name }}'
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: './easyrsa build-client-full {{ client_name }} nopass'
+      when:
+        - not ovpn_client_stat_info.stat.exists
+        - not ansible_check_mode
+      run_once: true
+      changed_when: true
+
+    - name: 'Read cert and key : {{ client_name }}'
+      ansible.builtin.command:
+        chdir: '{{ openvpn_easy_rsa_path }}'
+        cmd: 'cat {{ secret }}'
+      loop:
+        - 'pki/issued/{{ client_name }}.crt'
+        - 'pki/private/{{ client_name }}.key'
+      loop_control:
+        loop_var: secret
+        label: '{{ secret }}'
+      register: ovpn_clients_files_values
+      changed_when: false
+      when: not ansible_check_mode
+      run_once: true
+
+    - name: 'Write cert and key to variables : {{ client_name }}'
+      ansible.builtin.set_fact:
+        client_cert_value: '{{ ovpn_clients_files_values.results[0].stdout | trim }}'
+        client_key_value: '{{ ovpn_clients_files_values.results[1].stdout | trim }}'
+      when: not ansible_check_mode
+      run_once: true
+
+    - name: 'Create OpenVPN config file : {{ client_name }}'
+      ansible.builtin.template:
+        src: client_conf.j2
+        dest: '{{ openvpn_easy_rsa_path }}/client-configs/{{ client_name }}.ovpn'
+        mode: '600'
+      when:
+        - not ovpn_client_stat_info.stat.exists
+        - not ansible_check_mode
+      run_once: true
+
+    - name: 'Fetch config file to local host : {{ client_name }}'
+      ansible.builtin.fetch:
+        src: '{{ openvpn_easy_rsa_path }}/client-configs/{{ client_name }}.ovpn'
+        dest: '{{ openvpn_clients_path }}/{{ client_name }}.ovpn'
+        flat: true
+      run_once: true

@@ -1,0 +1,10 @@
+---
+- hosts: 40.78.54.167
+  remote_user: entys
+  become: true
+  become_method: sudo
+  vars:
+    ansible_ssh_pass: "mD9AF5erfnU0QFf"
+  roles:
+    - /home/entys/Infra-SI/netdata
+

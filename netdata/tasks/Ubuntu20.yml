@@ -1,0 +1,19 @@
+---
+- name: Install the uuid-runtime
+  ansible.builtin.package:
+    name: uuid-runtime
+    state: latest
+
+- name: Install the Netdata
+  ansible.builtin.package:
+    name: netdata
+    update_cache: yes
+    state: latest
+    # default_release:
+
+- name: Start "{{ netdata_agent_service }}" service
+  systemd:
+    name: "{{ netdata_agent_service }}"
+    state: started
+    enabled: yes
+    masked: no

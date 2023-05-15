@@ -1,0 +1,80 @@
+---
+- name: Install gpg
+  ansible.builtin.package:
+    name: gnupg,software-properties-common
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Add gpg hey
+  apt_key:
+    url: "https://packages.grafana.com/gpg.key"
+    validate_certs: no
+
+- name: Add repository
+  apt_repository:
+    repo: "deb https://packages.grafana.com/oss/deb stable main"             
+    state: present
+    validate_certs: no
+
+- name: Install grafana
+  ansible.builtin.package:
+    name: grafana
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: start service grafana-server
+  systemd:
+    name: grafana-server
+    state: started
+    enabled: yes
+
+- name: Wait for service up
+  uri:
+    url: "http://127.0.0.1:3000"
+    status_code: 200
+  register: __result
+  until: __result.status == 200
+  retries: 120
+  delay: 1
+
+- name: Add Prometheus Datasource
+  template:
+    src: grafana_datasource_yaml.j2
+    dest: "{{ grafana_dir_configuration }}/provisioning/datasources/prometheus.yml"
+    mode: 0755
+    owner: root
+    group: grafana
+  notify: restart_grafana
+
+- name: Add Dashboard provider
+  template:
+    src: grafana_dashboard_provider_yaml.j2
+    dest: "{{ grafana_dir_configuration }}/provisioning/dashboards/dashboard_provider_ansible.yml"
+    mode: 0755
+    owner: root
+    group: grafana
+
+- name: Creates Dashboard Provider directory
+  file:
+    path: "{{ grafana_dashboard_provider_path }}"
+    state: directory    
+
+- name: Add OpenVPN Dashboard
+  copy:
+    src: grafana_dashboard_openvpn.json
+    dest: "{{ grafana_dashboard_provider_path }}/dashboard_openvpn.json"
+  notify: restart_grafana
+
+- name: Install Piechart Plugin
+  shell : "grafana-cli plugins install grafana-piechart-panel"
+  notify: restart_grafana
+
+- name: Add Grafana rule of Uncomplicated Firewall
+  community.general.ufw:
+    rule: allow
+    port: '3000'
+    protocol: 'tcp'
+    state: enabled
+  when: ufw_open_grafana_port

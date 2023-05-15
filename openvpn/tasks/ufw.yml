@@ -1,0 +1,53 @@
+---
+  - name: Install UFW
+    ansible.builtin.package:
+      name: ufw
+      state: present
+      
+  - name: Edit default forward policy
+    ansible.builtin.lineinfile:
+      path: /etc/default/ufw
+      regexp: '^DEFAULT_FORWARD_POLICY=.+'
+      line: 'DEFAULT_FORWARD_POLICY="ACCEPT"'
+    notify: 'openvpn : reload firewall'
+
+  - name: Backup UFW before.rules
+    ansible.builtin.copy:
+      src: /etc/ufw/before.rules
+      dest: /etc/ufw/before.rules.bak
+      mode: '644'
+      remote_src: true
+
+  - name: Check UFW before.rules
+    ansible.builtin.command:
+      cmd: cat /etc/ufw/before.rules
+    register: ovpn_ufw_rules_before_info
+    check_mode: false
+    changed_when: false
+    notify: 'openvpn : reload firewall'
+
+  - name: Inject OpenVPN rule to ufw
+    ansible.builtin.lineinfile:
+      path: /etc/ufw/before.rules
+      line: "{{ lookup('file', 'ufw_rules_before.rules') | replace('$ansible_default_ipv4.interface', ansible_default_ipv4.interface) }}"
+      insertbefore: BOF
+      state: present
+    when:
+      - ('START_OPENVPN_RULES' not in ovpn_ufw_rules_before_info.stdout)
+    notify: 'openvpn : reload firewall'
+
+  - name: Add SSH rule of Uncomplicated Firewall
+    community.general.ufw:
+      rule: allow
+      port: '{{ ansible_port | default(22) }}'
+      protocol: tcp
+      state: enabled
+    notify: 'openvpn : reload firewall'
+
+  - name: Add OpenVPN rule of Uncomplicated Firewall
+    community.general.ufw:
+      rule: allow
+      port: '{{ openvpn_port }}'
+      protocol: '{{ openvpn_protocol }}'
+      state: enabled
+    notify: 'openvpn : reload firewall'

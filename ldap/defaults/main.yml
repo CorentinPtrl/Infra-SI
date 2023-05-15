@@ -1,0 +1,36 @@
+---
+ldap_basedn:       dc=vpn-infra         # Base DN
+ldap_server_uri:   ldap://localhost:389       # LDAP server URI
+ldap_bind_pw:      secret                     # bind password
+
+#LDAP Users
+ldap_users:
+  test:
+    cn: Test_first_name Test_last_name
+    givenname: test
+    sn: Surtest
+    userpassword: password
+    mail: test@outlook.fr
+  corentin:
+    cn: Corentin Pitrel
+    givenname: Corentin
+    sn: Corentin
+    userpassword: password
+    mail: corentin.pitrel@outlook.fr
+ldap_groups:
+  - name: grafana
+    members:
+      - test
+      - corentin
+  - name: openvpn
+    members:
+      - corentin
+
+#LDAP Configuration
+ldap_config_grafana: false
+ldap_config_openvpn: false
+
+#OpenVPN Dir's
+
+openvpn_easy_rsa_path: ./ovpn-easy-rsa
+openvpn_clients_path: ./ovpn-clients

@@ -1,0 +1,35 @@
+---
+# tasks file for ldap
+- name: Install LDAP
+  ansible.builtin.include_tasks: install.yml
+
+- name: Start ldap service
+  service:
+    name: slapd
+    state: started
+    enabled: yes      
+
+- name: Register encripted password
+  command: slappasswd -s "{{ldap_bind_pw}}"
+  register: ldap_encripted_password
+
+- name: Generate Users
+  ansible.builtin.include_tasks: generate_users.yml
+
+- name: Check Grafana is Installed
+  ansible.builtin.stat:
+    path: /etc/grafana/grafana.ini
+  register: grafana_installed
+
+- name: Configure LDAP Grafana
+  ansible.builtin.include_tasks: configure_grafana.yml
+  when: ldap_config_grafana == true and grafana_installed.stat.exists == true
+
+- name: Check Openvpn is Installed
+  ansible.builtin.stat:
+    path: /etc/openvpn/server/server.conf
+  register: openvpn_installed
+
+- name: Configure LDAP OpenVPN
+  ansible.builtin.include_tasks: configure_openvpn.yml
+  when: ldap_config_openvpn == true and openvpn_installed.stat.exists == true
