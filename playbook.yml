@@ -13,7 +13,6 @@
     ldap_groups:
       - name: grafana
         members:
-          - test
           - corentin
     ufw_open_prometheus_port: true
     ldap_config_grafana: true
