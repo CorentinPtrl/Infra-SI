@@ -1,0 +1,5 @@
+---
+# vars file for ldap
+dbtype: "{1}mdb"
+dbconfig_path: /usr/share/slapd/DB_CONFIG
+schema_path: /etc/ldap/schema
