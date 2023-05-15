@@ -41,6 +41,15 @@
       mode: '744'
     run_once: true
 
+  - name: Ensure clients directory exists on CA host
+    ansible.builtin.file:
+      path: '{{ openvpn_easy_rsa_path }}/client-configs'
+      state: directory
+      mode: '744'
+    run_once: true
+    tags:
+      - ovpn-clients  
+
   - name: 'Check if config already exists : ldap'
     ansible.builtin.stat:
       path: '{{ openvpn_easy_rsa_path }}/client-configs/ldap.ovpn'

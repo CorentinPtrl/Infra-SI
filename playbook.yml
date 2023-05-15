@@ -2,7 +2,7 @@
 - hosts: vpn
   become: yes
   vars:
-    openvpn_url: 23.101.193.99
+    openvpn_url: 20.107.245.146
     openvpn_clients:
       - name: corentin
       - name: test
@@ -13,4 +13,3 @@
     - role: openvpn
     - role: monitoring
     - role: ldap
-    - role: pihole
