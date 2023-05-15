@@ -13,3 +13,4 @@
     - role: openvpn
     - role: monitoring
     - role: ldap
+    - role: netdata
