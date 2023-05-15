@@ -3,9 +3,18 @@
   become: yes
   vars:
     openvpn_url: 20.107.245.146
-    openvpn_clients:
-      - name: corentin
-      - name: test
+    ldap_users:
+      corentin:
+        cn: Corentin Pitrel
+        givenname: Corentin
+        sn: Corentin
+        userpassword: password
+        mail: corentin.pitrel@outlook.fr
+    ldap_groups:
+      - name: grafana
+        members:
+          - test
+          - corentin
     ufw_open_prometheus_port: true
     ldap_config_grafana: true
     ldap_config_openvpn: true
