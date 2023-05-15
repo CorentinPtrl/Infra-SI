@@ -1,0 +1,11 @@
+---
+- name: Install packages
+  become: true
+  ansible.builtin.apt:
+    name: "{{ pi_hole_prerequisites }}"
+    state: present
+    update_cache: true
+  tags:
+    - pihole
+    - installation
+    - prerequisites
