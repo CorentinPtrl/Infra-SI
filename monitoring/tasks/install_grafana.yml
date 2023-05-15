@@ -77,3 +77,4 @@
     port: '3000'
     protocol: 'tcp'
     state: enabled
+  when: ufw_open_grafana_port

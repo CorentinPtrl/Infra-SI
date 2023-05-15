@@ -1,0 +1,40 @@
+[[servers]]
+host = "127.0.0.1"
+port = 389
+use_ssl = false
+start_tls = false
+tls_ciphers = []
+min_tls_version = ""
+ssl_skip_verify = false
+
+bind_dn = "{{ ldap_basedn }}"
+bind_password = '{{ ldap_bind_pw }}'
+
+timeout = 10
+
+search_filter = "(uid=%s)"
+
+search_base_dns = ["{{ ldap_basedn }}"]
+
+group_search_filter = "(&(objectclass=groupOfUniqueNames)(uniqueMember=uid=%s,ou=people,dc=vpn-infra))"
+group_search_filter_user_attribute = "uid"
+
+[servers.attributes]
+name = "givenName"
+surname = "sn"
+username = "cn"
+member_of = "memberOf"
+email =  "email"
+
+[[servers.group_mappings]]
+group_dn = "cn=grafana,ou=groups,dc=vpn-infra"
+org_role = "Admin"
+grafana_admin = true
+
+[[servers.group_mappings]]
+group_dn = "cn=editors,ou=groups,dc=grafana,dc=org"
+org_role = "Editor"
+
+[[servers.group_mappings]]
+group_dn = "*"
+org_role = "Viewer"

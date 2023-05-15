@@ -1,4 +1,6 @@
 ---
+
+#Prometheus
 prometheus_dir_configuration: "/etc/prometheus"
 prometheus_port: 9090
 prometheus_retention_time: "365d"
@@ -22,4 +24,7 @@ prometheus_var_config:
 grafana_dir_configuration: "/etc/grafana"
 grafana_dashboard_provider_name: Services
 grafana_dashboard_provider_path: /var/lib/grafana/dashboards
-grafana_admin_password: Password1234
+
+#UFW
+ufw_open_prometheus_port: false
+ufw_open_grafana_port: true

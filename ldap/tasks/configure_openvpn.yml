@@ -1,0 +1,98 @@
+---
+  - name: Install OpenVPN LDAP package
+    ansible.builtin.package:
+      name: openvpn-auth-ldap
+      state: latest
+      update_cache: true
+  
+  - name: Check OpenVPN auth dir exists
+    file: 
+      path: "/etc/openvpn/auth"
+      state: directory
+
+  - name: Copy OpenVPN LDAP config
+    ansible.builtin.template:
+      src: openvpn_ldap_auth_conf.j2
+      dest: /etc/openvpn/auth/ldap.conf
+      mode: '644'
+
+  - name: Check OpenVPN server conf
+    ansible.builtin.command:
+      cmd: cat /etc/openvpn/server/server.conf
+    register: ovpn_conf_ldap
+    check_mode: false
+    changed_when: false
+
+  - name: Inject LDAP plugin to OpenVPN conf
+    ansible.builtin.lineinfile:
+      path: /etc/openvpn/server/server.conf
+      line: "{{ lookup('file', 'openvpn_auth.conf') }}"
+      insertbefore: BOF
+      state: present
+    when:
+      - ('START_LDAP_OPENVPN' not in ovpn_conf_ldap.stdout)
+    notify: 'openvpn : restart service'
+  
+
+  - name: Ensure clients directory is present on localhost host
+    ansible.builtin.file:
+      path: '{{ openvpn_clients_path }}'
+      state: directory
+      mode: '744'
+    run_once: true
+
+  - name: 'Check if config already exists : ldap'
+    ansible.builtin.stat:
+      path: '{{ openvpn_easy_rsa_path }}/client-configs/ldap.ovpn'
+    register: ovpn_client_stat_info
+    run_once: true
+
+  - name: 'Generate key/cert pair : ldap'
+    ansible.builtin.command:
+      chdir: '{{ openvpn_easy_rsa_path }}'
+      cmd: './easyrsa build-client-full ldap nopass'
+    when:
+      - not ovpn_client_stat_info.stat.exists
+      - not ansible_check_mode
+    run_once: true
+    changed_when: true
+
+  - name: Read LDAP cert
+    ansible.builtin.command:
+      chdir: '{{ openvpn_easy_rsa_path }}'
+      cmd: cat pki/issued/ldap.crt
+    register: ldap_cert
+    check_mode: false
+    changed_when: false
+
+  - name: Read LDAP key
+    ansible.builtin.command:
+      chdir: '{{ openvpn_easy_rsa_path }}'
+      cmd: cat pki/private/ldap.key
+    register: ldap_key
+    check_mode: false
+    changed_when: false  
+
+  - name: 'Write cert and key to variables : ldap'
+    ansible.builtin.set_fact:
+      client_cert_value: '{{ ldap_cert.stdout | trim }}'
+      client_key_value: '{{ ldap_key.stdout | trim }}'
+    when: not ansible_check_mode
+    run_once: true
+
+  - name: 'Create Client OpenVPN LDAP config file'
+    ansible.builtin.template:
+      src: client_conf_ldap.j2
+      dest: '{{ openvpn_easy_rsa_path }}/client-configs/ldap.ovpn'
+      mode: '600'
+    when:
+      - not ovpn_client_stat_info.stat.exists
+      - not ansible_check_mode
+    run_once: true
+  
+  - name: 'Fetch LDAP config file to local host'
+    ansible.builtin.fetch:
+      src: '{{ openvpn_easy_rsa_path }}/client-configs/ldap.ovpn'
+      dest: '{{ openvpn_clients_path }}/ldap.ovpn'
+      flat: true
+    run_once: true  

@@ -35,4 +35,5 @@
     rule: allow
     port: '{{ prometheus_port }}'
     protocol: 'tcp'
-    state: enabled    
+    state: enabled 
+  when: ufw_open_prometheus_port

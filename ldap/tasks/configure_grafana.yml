@@ -1,0 +1,14 @@
+---
+
+  - name: Copy Grafana config
+    ansible.builtin.template:
+      src: grafana_ini.j2
+      dest: /etc/grafana/grafana.ini
+      mode: '644'
+  
+  - name: Copy Grafana LDAP config
+    ansible.builtin.template:
+      src: ldap_toml.j2
+      dest: /etc/grafana/ldap.toml
+      mode: '644'      
+    notify: restart_grafana
