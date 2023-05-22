@@ -8,5 +8,5 @@ oom_score: 1000
 
 # Web
 owner: root
-group: netdata
-bind_to: localhost
+group: root
+bind_to: 0.0.0.0

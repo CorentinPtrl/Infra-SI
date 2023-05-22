@@ -7,4 +7,4 @@ pi_hole_prerequisites:
   - git
 
 # Pi-hole installation directory
-pi_hole_install_dir: "/srv/ovpn/.pihole"
+pi_hole_install_dir: "/etc/.pihole"
