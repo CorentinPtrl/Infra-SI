@@ -1,47 +1,57 @@
 ---
-  - name: Install Golang and Dependencies
+  - name: Install Dependencies
     ansible.builtin.package:
       name: 
-        - golang
         - git
       state: present
 
-  - name: Creates OpenVPN directory
-    file:
-      path: /var/lib/openvpn_exporter
-      state: directory  
-      
-  - name: Clone OpenVPN Exporter
-    git:
-      repo: https://github.com/kumina/openvpn_exporter.git
-      dest: ./openvpn_exporter
-      clone: yes
-      update: yes    
+  - name: Install Golang
+    snap:
+      name: go
+      classic: yes
 
-  - name: Build OpenVPN Exporter
+  - name: Clone Pi-Hole Exporter
+    git:
+      repo: https://github.com/eko/pihole-exporter.git
+      dest: ./pihole-exporter
+      clone: yes
+      update: yes        
+
+  - name: Build Pihole Exporter
     ansible.builtin.command:
-      chdir: ./openvpn_exporter
-      cmd: go build -o openvpn_exporter
+      chdir: ./pihole-exporter
+      cmd: go build -o pihole-exporter
     changed_when: true
 
-  - name: Stat OpenVpn Exporter
-    stat: path=openvpn_exporter
-    register: openvpn_exporter
+  - name: Stat Pihole Exporter
+    stat: path=pihole-exporter
+    register: pihole-exporter
 
-  - name: Move OpenVpn Exporter to lib
-    command: mv ./openvpn_exporter/openvpn_exporter /var/lib/openvpn_exporter
-    when: openvpn_exporter.stat.exists
+  - name: Move Pihole Exporter to lib
+    command: mv ./pihole-exporter/pihole-exporter /var/lib/pihole-exporter
+    when: pihole-exporter.stat.exists
 
   - name: Cleaning Directory
     ansible.builtin.file:
-      path: ./openvpn_exporter
+      path: ./pihole-exporter
       state: absent
 
   - name: Install Exporter Serivce
     ansible.builtin.template:
-      src: exporter_service.j2
-      dest: /etc/systemd/system/openvpn_exporter.service
+      src: pihole-exporter.j2
+      dest: /etc/systemd/system/pihole-exporter.service
       mode: '644'
 
-  - name: Start OpenVPN Exporter Service
-    systemd: state=started name=openvpn_exporter daemon_reload=yes
+  - name: Start Pihole Exporter Service
+    systemd: state=started name=pihole-exporter daemon_reload=yes
+  
+  - name: Creates Dashboard Provider directory
+    file:
+      path: "{{ grafana_dashboard_provider_path }}"
+    state: directory    
+
+  - name: Add Pihole Dashboard
+    copy:
+      src: grafana_dashboard_pihole.json
+      dest: "{{ grafana_dashboard_provider_path }}/grafana_dashboard_pihole.json"
+    notify: restart_grafana

@@ -23,7 +23,6 @@ prometheus_var_config:
 # Grafana
 grafana_dir_configuration: "/etc/grafana"
 grafana_dashboard_provider_name: Services
-grafana_dashboard_provider_path: /var/lib/grafana/dashboards
 
 #UFW
 ufw_open_prometheus_port: false

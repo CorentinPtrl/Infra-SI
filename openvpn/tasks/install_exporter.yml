@@ -1,10 +1,14 @@
 ---
-  - name: Install Golang and Dependencies
+  - name: Install Dependencies
     ansible.builtin.package:
       name: 
-        - golang
         - git
       state: present
+  
+  - name: Install Golang
+    snap:
+      name: go
+      classic: yes
 
   - name: Creates OpenVPN directory
     file:

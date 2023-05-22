@@ -10,3 +10,14 @@
   tags:
     - netdata
     - configure
+
+- name: Creates Dashboard Provider directory
+  file:
+    path: "{{ grafana_dashboard_provider_path }}"
+    state: directory    
+
+- name: Add NetData Dashboard
+  copy:
+    src: grafana_dashboard_netdata.json
+    dest: "{{ grafana_dashboard_provider_path }}/grafana_dashboard_netdata.json"
+  notify: restart_grafana

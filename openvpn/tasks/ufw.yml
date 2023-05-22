@@ -24,7 +24,6 @@
     register: ovpn_ufw_rules_before_info
     check_mode: false
     changed_when: false
-    notify: 'openvpn : reload firewall'
 
   - name: Inject OpenVPN rule to ufw
     ansible.builtin.lineinfile:

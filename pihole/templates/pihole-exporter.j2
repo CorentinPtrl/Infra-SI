@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenVpn Exporter
+After=network-online.target
+ 
+[Service]
+Type=simple
+ 
+ExecStart=/var/lib/pihole-exporter/pihole-exporter  -pihole_hostname 127.0.0.1 -pihole_password password
+
+Restart=on-failure
+ 
+TimeoutStopSec=300
+ 
+[Install]
+WantedBy=multi-user.target
